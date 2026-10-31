@@ -425,7 +425,12 @@ export async function saveDatabaseAsync(data?: DatabaseSchema): Promise<void> {
   cachedDb = toSave;
   lastCacheTime = Date.now();
   if (hasDbUrl()) {
-    await saveCloudDatabaseAsync(toSave);
+    const success = await saveCloudDatabaseAsync(toSave);
+    if (!success) {
+      throw new Error("Failed to persist changes to Neon cloud database. Please verify DATABASE_URL in Vercel settings.");
+    }
+  } else if (process.env.NODE_ENV === "production") {
+    throw new Error("Database is not connected! Please add DATABASE_URL to your Vercel Project Environment Variables to save products permanently.");
   }
 }
 
@@ -470,6 +475,10 @@ export async function getAllProductsAsync(includeUnpublished = false): Promise<P
       if (cloud && Array.isArray(cloud.products)) {
         cachedDb = cloud;
         lastCacheTime = Date.now();
+        if (includeUnpublished) {
+          return cloud.products;
+        }
+        return cloud.products.filter((p) => p.published);
       }
     } catch {
       // ignore
@@ -1111,6 +1120,20 @@ export function getAllCoupons(): Coupon[] {
     return db.coupons;
   }
   return [];
+}
+
+export async function getAllCouponsAsync(): Promise<Coupon[]> {
+  if (hasDbUrl()) {
+    try {
+      const cloud = await getCloudDatabaseAsync<DatabaseSchema>();
+      if (cloud && Array.isArray(cloud.coupons)) {
+        cachedDb = cloud;
+        lastCacheTime = Date.now();
+        return cloud.coupons;
+      }
+    } catch {}
+  }
+  return getAllCoupons();
 }
 
 export function getCouponByCode(code: string): Coupon | null {

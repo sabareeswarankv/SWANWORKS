@@ -38,10 +38,12 @@ export async function POST(req: NextRequest) {
     revalidatePath("/shop", "page");
     revalidatePath("/admin", "page");
     return NextResponse.json({ success: true, product: created });
-  } catch (err) {
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Failed to create product";
     console.error("Admin product creation failed:", err);
     return NextResponse.json(
-      { error: "Failed to create product" },
+      { error: errorMsg },
       { status: 500 }
     );
   }

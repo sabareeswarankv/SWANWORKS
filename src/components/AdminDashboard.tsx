@@ -40,6 +40,7 @@ interface AdminDashboardProps {
   initialCategories?: string[];
   initialCoupons?: Coupon[];
   initialMessages?: CustomerMessage[];
+  dbConnected?: boolean;
 }
 
 export default function AdminDashboard({
@@ -49,6 +50,7 @@ export default function AdminDashboard({
   initialCategories,
   initialCoupons,
   initialMessages,
+  dbConnected = true,
 }: AdminDashboardProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
@@ -604,9 +606,20 @@ export default function AdminDashboard({
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E9E5FF]">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#7060F5] bg-[#ECE9FF] px-3 py-1 rounded-full">
-            STORE MANAGEMENT
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7060F5] bg-[#ECE9FF] px-3 py-1 rounded-full">
+              STORE MANAGEMENT
+            </span>
+            {dbConnected ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Neon Cloud Synced
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 border border-red-200 text-red-700 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Cloud DB Disconnected
+              </span>
+            )}
+          </div>
           <h1 className="text-3xl font-extrabold text-[#22212B] mt-2">
             Store Dashboard
           </h1>
@@ -641,6 +654,23 @@ export default function AdminDashboard({
           </button>
         </div>
       </div>
+
+      {!dbConnected && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 flex items-start gap-3.5 shadow-2xs">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <h4 className="font-bold text-amber-950 text-sm">
+              Live Cloud Database Not Configured
+            </h4>
+            <p className="text-amber-800 leading-relaxed">
+              Your store is currently running in temporary memory. Any product, category, or order changes will disappear when you refresh or view on your mobile phone until you connect your database.
+            </p>
+            <p className="text-amber-900 font-semibold pt-1">
+              To fix this: Go to your <strong>Vercel Dashboard &rarr; Project Settings &rarr; Environment Variables</strong>, add <code className="bg-amber-100/80 px-1.5 py-0.5 rounded font-mono text-amber-950">DATABASE_URL</code>, and redeploy.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5">

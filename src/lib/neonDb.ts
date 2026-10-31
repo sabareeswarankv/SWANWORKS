@@ -10,8 +10,13 @@ function getNeonUrl(): string | null {
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
     null
   );
+}
+
+export function isNeonConfigured(): boolean {
+  return Boolean(getNeonUrl());
 }
 
 function getNeonClient() {
@@ -68,7 +73,10 @@ export async function getCloudDatabaseAsync<T = unknown>(): Promise<T | null> {
  */
 export async function saveCloudDatabaseAsync<T = unknown>(data: T): Promise<boolean> {
   const sql = getNeonClient();
-  if (!sql) return false;
+  if (!sql) {
+    console.error("CRITICAL: saveCloudDatabaseAsync called but no Neon database URL is configured!");
+    return false;
+  }
 
   try {
     await ensureStoreTable(sql);
