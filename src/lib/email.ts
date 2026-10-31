@@ -18,8 +18,8 @@ export interface SentEmailRecord {
 }
 
 export function getMailTransporter() {
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.replace(/\s+/g, "");
 
   if (!user || !pass) return null;
 
