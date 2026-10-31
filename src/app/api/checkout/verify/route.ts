@@ -7,7 +7,11 @@ import {
   saveDatabaseAsync,
   getAllProducts,
 } from "@/lib/db";
-import { sendOrderConfirmationEmail, sendAdminNewPaymentAlert } from "@/lib/email";
+import {
+  sendOrderConfirmationEmail,
+  sendAdminNewPaymentAlert,
+  sendPaymentReceivedPendingEmail,
+} from "@/lib/email";
 import { getBaseUrl } from "@/lib/url";
 import crypto from "crypto";
 
@@ -97,6 +101,13 @@ export async function POST(req: NextRequest) {
         await sendAdminNewPaymentAlert(updatedOrder, cleanUtr, baseUrl);
       } catch (err) {
         console.error("Failed to notify admin of new payment:", err);
+      }
+
+      // Reassure customer immediately with an acknowledgment email
+      try {
+        await sendPaymentReceivedPendingEmail(updatedOrder, baseUrl);
+      } catch (custMailErr) {
+        console.error("Failed to send customer pending payment acknowledgment email:", custMailErr);
       }
 
       return NextResponse.json({

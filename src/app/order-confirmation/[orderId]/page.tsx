@@ -64,27 +64,38 @@ export default async function OrderConfirmationPage({
               <Clock className="w-10 h-10 animate-pulse" />
             </div>
             <span className="inline-block text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-3.5 py-1 rounded-full border border-amber-200">
-              VERIFYING PAYMENT
+              PAYMENT RECORDED • VERIFICATION IN PROGRESS
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-[#22212B]">
-              Order #{order.orderNumber} Received
+              Order #{order.orderNumber} Logged
             </h1>
             <p className="text-sm text-[#777486] max-w-md mx-auto">
-              Your UPI payment reference <strong>{order.utr}</strong> has been logged.
-              We are confirming the bank transaction.
+              Your UPI payment has been received and is being verified against our bank records.
             </p>
           </div>
 
           <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E9E5FF] shadow-xs space-y-6">
+            {/* Reassurance Banner: Safe to leave */}
+            <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>You do not need to keep this page open!</span>
+              </div>
+              <p className="text-xs text-emerald-800 leading-relaxed pl-7">
+                We have dispatched an acknowledgment email to <strong>{order.customerEmail}</strong>. 
+                Our team verifies UPI credits within <strong>15–30 minutes</strong> (orders placed late at night are verified by morning). 
+                The instant your payment is approved, your download links are delivered directly to your inbox.
+              </p>
+            </div>
+
             <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#F9F8FF] border border-[#E9E5FF]">
               <Loader2 className="w-6 h-6 text-[#7060F5] animate-spin shrink-0" />
               <div className="text-xs">
                 <span className="font-bold text-[#22212B] block">
-                  Checking Bank Records (Direct UPI)
+                  Live Bank Status Monitor Active
                 </span>
                 <span className="text-[#777486]">
-                  This page automatically updates the instant your payment is approved.
-                  Your download links will also be sent to <strong>{order.customerEmail}</strong>.
+                  If you leave this tab open, this page will automatically unlock your downloads the second approval is complete.
                 </span>
               </div>
             </div>
@@ -104,17 +115,27 @@ export default async function OrderConfirmationPage({
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Zero Risk Guarantee • 100% Delivery or Full Refund</span>
-              </div>
+            {/* Recovery & Support Links */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs border-t border-[#F3F0FF]">
+              <Link
+                href="/retrieve-order"
+                className="inline-flex items-center gap-1.5 font-bold text-[#7060F5] hover:underline"
+              >
+                <span>Need to look up this order later? Use Order Lookup →</span>
+              </Link>
               <a
                 href="mailto:helloswanworks@gmail.com"
-                className="font-bold hover:underline shrink-0 ml-2"
+                className="text-[#777486] hover:text-[#22212B] font-medium"
               >
-                Contact Help Desk →
+                Support: helloswanworks@gmail.com
               </a>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#ECE9FF]/60 border border-[#E9E5FF] text-xs text-[#5A48E6] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#7060F5] shrink-0" />
+                <span>Zero-Risk Guarantee • 100% Download Delivery or Instant Refund</span>
+              </div>
             </div>
           </div>
         </>

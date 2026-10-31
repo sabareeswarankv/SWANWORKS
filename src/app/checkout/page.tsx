@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [utrNumber, setUtrNumber] = useState("");
   const [isVerifyingUtr, setIsVerifyingUtr] = useState(false);
   const [utrError, setUtrError] = useState<string | null>(null);
+  const [hasClickedUpiIntent, setHasClickedUpiIntent] = useState(false);
 
   const finalPayableTotal = appliedCoupon ? appliedCoupon.finalTotal : subtotal;
 
@@ -256,7 +257,7 @@ export default function CheckoutPage() {
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(upiLink)}`;
 
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-28 md:pb-12">
         <div className="mb-6">
           <button
             onClick={() => setPendingUpi(null)}
@@ -277,15 +278,116 @@ export default function CheckoutPage() {
             Pay ₹{pendingUpi.subtotal} via UPI
           </h1>
           <p className="text-sm text-[#777486] mt-1">
-            Scan the QR code with any UPI app or tap the button below on mobile.
+            Tap below to open your UPI app, then confirm to unlock your digital files.
           </p>
         </div>
 
+        {utrError && (
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{utrError}</span>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* MOBILE-FIRST FAST ACTION CARD (NO SCROLLING NEEDED ON PHONE) */}
+        {/* ============================================================ */}
+        <div className="block md:hidden mb-6 p-5 rounded-3xl bg-white border border-[#E9E5FF] shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F3F0FF]">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#7060F5] bg-[#ECE9FF] px-2.5 py-0.5 rounded-full">
+                2-Step Mobile Checkout
+              </span>
+              <h3 className="text-base font-bold text-[#22212B] mt-1.5">
+                Pay & Unlock Instantly
+              </h3>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] text-[#777486] block">Payable Total</span>
+              <span className="text-base font-extrabold text-[#7060F5]">₹{pendingUpi.subtotal}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* Step 1 Button */}
+            <div>
+              <span className="text-[11px] font-bold text-[#777486] uppercase tracking-wider block mb-1.5">
+                Step 1: Complete Transfer
+              </span>
+              <a
+                href={upiLink}
+                onClick={() => setHasClickedUpiIntent(true)}
+                className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#7060F5] hover:bg-[#5A48E6] text-white font-bold text-xs sm:text-sm shadow-sm transition-all"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>Tap to Pay in GPay / PhonePe / Paytm</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
+              <span className="text-[10px] text-[#777486] block text-center mt-1">
+                Supports GPay • PhonePe • Paytm • CRED • BHIM
+              </span>
+            </div>
+
+            {/* Step 2 Button (Placed right below Step 1 on mobile!) */}
+            <div className={`pt-2 transition-all ${hasClickedUpiIntent ? "p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200" : ""}`}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className={`text-[11px] font-bold uppercase tracking-wider block ${hasClickedUpiIntent ? "text-emerald-800" : "text-[#777486]"}`}>
+                  Step 2: After Paying in App
+                </span>
+                {hasClickedUpiIntent && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full animate-pulse">
+                    Returned from app? Tap below!
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleConfirmPaid}
+                disabled={isVerifyingUtr}
+                className={`w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl font-extrabold text-xs sm:text-sm transition-all shadow-md cursor-pointer ${
+                  hasClickedUpiIntent
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-300"
+                    : "bg-[#22212B] hover:bg-black text-white"
+                }`}
+              >
+                {isVerifyingUtr ? (
+                  <span>Checking your payment...</span>
+                ) : (
+                  <>
+                    <span>I Have Completed Payment</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[#F3F0FF] flex items-center justify-between text-[11px] text-[#777486]">
+            <span className="flex items-center gap-1 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              100% Secure UPI Transfer
+            </span>
+            <span>Files emailed to {email}</span>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* DESKTOP 2-COLUMN VIEW & OPTIONAL QR SECTION FOR MOBILE       */}
+        {/* ============================================================ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {/* Left: QR Code & Mobile Deep Link */}
           <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E9E5FF] shadow-xs text-center space-y-4">
+            <div className="text-left md:text-center">
+              <span className="text-xs font-bold text-[#22212B] block">
+                Scan with any UPI App:
+              </span>
+              <p className="text-[11px] text-[#777486] mt-0.5">
+                Point your phone camera, GPay, or PhonePe scanner at the code
+              </p>
+            </div>
+
             <div className="relative inline-block p-3 rounded-2xl bg-[#F9F8FF] border border-[#E9E5FF]">
-              {/* QR Code image generated via clean HTTPS API */}
               <img
                 src={qrCodeUrl}
                 alt="UPI Payment QR Code"
@@ -299,16 +401,17 @@ export default function CheckoutPage() {
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs text-[#777486] block">Scan using any UPI App:</span>
+              <span className="text-xs text-[#777486] block">Accepted Apps:</span>
               <p className="text-xs font-semibold text-[#22212B]">
                 GPay • PhonePe • Paytm • BHIM • CRED
               </p>
             </div>
 
-            {/* Mobile App Intent Button */}
-            <div className="pt-2">
+            {/* Desktop Intent button */}
+            <div className="pt-2 hidden md:block">
               <a
                 href={upiLink}
+                onClick={() => setHasClickedUpiIntent(true)}
                 className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-[#7060F5] hover:bg-[#5A48E6] text-white font-bold text-xs sm:text-sm transition-all shadow-sm"
               >
                 <Smartphone className="w-4 h-4" />
@@ -321,13 +424,13 @@ export default function CheckoutPage() {
             <div className="pt-2 border-t border-[#F3F0FF] flex items-center justify-center text-xs bg-[#F9F8FF] p-2.5 rounded-xl text-[#777486]">
               <div className="flex items-center gap-1.5 font-medium text-[11px]">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Instant Transfer via SBI Secure UPI</span>
+                <span>Direct Transfer via SBI Secure UPI</span>
               </div>
             </div>
           </div>
 
-          {/* Right: Instant 1-Click Confirmation */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E9E5FF] shadow-xs space-y-6">
+          {/* Right: Desktop Confirmation Card */}
+          <div className="hidden md:block p-6 sm:p-8 rounded-3xl bg-white border border-[#E9E5FF] shadow-xs space-y-6">
             <div className="border-b border-[#F3F0FF] pb-4">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#7060F5] bg-[#ECE9FF] px-2.5 py-0.5 rounded-full">
                 Step 2 of 2
@@ -339,13 +442,6 @@ export default function CheckoutPage() {
                 Once you complete the transfer on GPay, PhonePe, or Paytm, simply click the button below. Zero typing required.
               </p>
             </div>
-
-            {utrError && (
-              <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{utrError}</span>
-              </div>
-            )}
 
             <div className="space-y-4">
               <button
@@ -371,8 +467,8 @@ export default function CheckoutPage() {
                 </div>
                 <ul className="space-y-1 text-[11px] list-disc list-inside">
                   <li>Clicking confirms your payment request.</li>
-                  <li>Our system verifies the bank credit and releases your files.</li>
-                  <li>Download links are also sent to <strong>{email}</strong>.</li>
+                  <li>Our team verifies the bank credit and releases your files.</li>
+                  <li>Download links are also sent straight to <strong>{email}</strong>.</li>
                 </ul>
               </div>
             </div>
@@ -389,6 +485,39 @@ export default function CheckoutPage() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* MOBILE STICKY FLOATING BOTTOM BAR (ALWAYS ACCESSIBLE 1-TAP)  */}
+        {/* ============================================================ */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-[#E9E5FF] shadow-2xl z-50 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-xs font-bold text-[#22212B] block truncate">
+              {hasClickedUpiIntent ? "Paid in your UPI app?" : "Paid via GPay/PhonePe?"}
+            </span>
+            <span className="text-[10px] text-[#777486] block">
+              Tap to confirm & get your files
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleConfirmPaid}
+            disabled={isVerifyingUtr}
+            className={`shrink-0 px-5 py-2.5 rounded-full text-xs font-bold shadow-md transition-all flex items-center gap-1.5 ${
+              hasClickedUpiIntent
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : "bg-[#7060F5] hover:bg-[#5A48E6] text-white"
+            }`}
+          >
+            {isVerifyingUtr ? (
+              <span>Checking...</span>
+            ) : (
+              <>
+                <span>I Have Paid</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
         </div>
       </div>
     );

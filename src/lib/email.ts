@@ -278,6 +278,156 @@ export async function sendAdminNewPaymentAlert(
   return record;
 }
 
+export async function sendPaymentReceivedPendingEmail(
+  order: Order,
+  baseUrl: string
+): Promise<SentEmailRecord> {
+  const emailId = `mail_pending_${Date.now()}`;
+  const subject = `Payment Received — Order #${order.orderNumber} in Verification | SWANWORKS`;
+
+  const itemsHtml = order.items
+    .map(
+      (item) => `
+      <tr style="border-bottom: 1px solid #E9E5FF;">
+        <td style="padding: 10px 0; font-weight: 500; color: #22212B;">${item.productTitle}</td>
+        <td style="padding: 10px 0; text-align: center; color: #777486;">×${item.quantity}</td>
+        <td style="padding: 10px 0; text-align: right; font-weight: 600; color: #22212B;">₹${item.totalPrice}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  const retrieveUrl = `${baseUrl}/retrieve-order`;
+  const orderUrl = `${baseUrl}/order-confirmation/${order.id}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${subject}</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F9F8FF; margin: 0; padding: 30px 20px; color: #22212B;">
+        <div style="max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; border: 1px solid #E9E5FF; padding: 36px; box-shadow: 0 10px 30px rgba(112, 96, 245, 0.06);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+            <span style="font-size: 20px; font-weight: 800; letter-spacing: 0.1em; color: #22212B;">SWANWORKS</span>
+          </div>
+
+          <div style="display: inline-block; padding: 4px 12px; background: #FEF3C7; color: #92400E; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;">
+            Payment Received • In Verification
+          </div>
+
+          <h1 style="font-size: 22px; font-weight: 700; color: #22212B; margin: 0 0 10px;">We received your payment details!</h1>
+          
+          <p style="font-size: 15px; color: #4B5563; line-height: 1.6; margin: 0 0 16px;">
+            Thank you for your order, <strong>${order.customerName || "Customer"}</strong>. We have logged your UPI payment reference for <strong>Order #${order.orderNumber}</strong>.
+          </p>
+
+          <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="font-weight: 700; font-size: 14px; color: #166534; margin-bottom: 4px;">
+              ✓ You do not need to keep the checkout page open
+            </div>
+            <p style="font-size: 13px; color: #15803D; margin: 0; line-height: 1.5;">
+              UPI payments are typically verified within <strong>15–30 minutes</strong> (orders placed late at night are verified first thing in the morning by 8:00 AM).
+            </p>
+          </div>
+
+          <div style="background-color: #F9F8FF; border: 1px solid #E9E5FF; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="font-size: 13px; color: #777486; margin-bottom: 6px;">Next Steps:</div>
+            <div style="font-size: 14px; color: #22212B; line-height: 1.5;">
+              As soon as our bank confirms the credit, your instant PDF download link will be <strong>emailed automatically to this address (${order.customerEmail})</strong>.
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid #E9E5FF; padding-top: 20px; margin-bottom: 24px;">
+            <h3 style="font-size: 15px; font-weight: 700; color: #22212B; margin: 0 0 12px;">Order Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              ${itemsHtml}
+              <tr>
+                <td colspan="2" style="padding-top: 14px; font-weight: 700; color: #22212B;">Total Amount</td>
+                <td style="padding-top: 14px; text-align: right; font-weight: 800; font-size: 16px; color: #7060F5;">₹${order.subtotal}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${orderUrl}" style="display: inline-block; background-color: #7060F5; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none; padding: 12px 24px; border-radius: 9999px;">
+              View Live Order Status →
+            </a>
+          </div>
+
+          <div style="background-color: #ECE9FF; border-radius: 10px; padding: 14px; font-size: 13px; color: #5A48E6; line-height: 1.5;">
+            <strong>Zero-Risk Guarantee:</strong> You can also look up or retrieve your order anytime at <a href="${retrieveUrl}" style="color: #7060F5; font-weight: 700;">swanworks.in/retrieve-order</a>. If you have any questions, just reply to this email or write to <strong>helloswanworks@gmail.com</strong>.
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  let deliveryStatus: "delivered_simulated" | "delivered_smtp" = "delivered_simulated";
+
+  const transporter = getMailTransporter();
+  if (transporter) {
+    try {
+      const plainTextContent = `
+Thank you for your order on SWANWORKS!
+
+Order Reference: #${order.orderNumber}
+Total: ₹${order.subtotal}
+
+We have received your payment details. You do not need to keep the checkout page open.
+Our team verifies UPI payments within 15–30 minutes (late night orders are verified first thing in the morning).
+As soon as verified, your digital downloads will be sent straight to this email address.
+
+Track your order anytime: ${orderUrl}
+Retrieve your purchases: ${retrieveUrl}
+
+Questions? Reply directly to this email or contact helloswanworks@gmail.com.
+      `.trim();
+
+      await transporter.sendMail({
+        from: '"SWANWORKS" <helloswanworks@gmail.com>',
+        to: order.customerEmail,
+        replyTo: "helloswanworks@gmail.com",
+        subject,
+        text: plainTextContent,
+        html,
+        headers: {
+          "X-Entity-Ref-ID": order.id,
+          "Auto-Submitted": "auto-generated",
+        },
+      });
+      deliveryStatus = "delivered_smtp";
+    } catch (smtpErr) {
+      console.error("Failed to send pending payment email via SMTP:", smtpErr);
+    }
+  }
+
+  const record: SentEmailRecord = {
+    id: emailId,
+    to: order.customerEmail,
+    subject,
+    orderNumber: order.orderNumber,
+    sentAt: new Date().toISOString(),
+    downloadLinks: [],
+    html,
+    status: deliveryStatus,
+  };
+
+  try {
+    let records: SentEmailRecord[] = [];
+    if (fs.existsSync(EMAILS_LOG)) {
+      records = JSON.parse(fs.readFileSync(EMAILS_LOG, "utf8"));
+    }
+    records.unshift(record);
+    fs.writeFileSync(EMAILS_LOG, JSON.stringify(records, null, 2), "utf8");
+  } catch (err) {
+    console.error("Failed to write to transactional email log:", err);
+  }
+
+  return record;
+}
+
 export function getDispatchedEmails(): SentEmailRecord[] {
   try {
     if (fs.existsSync(EMAILS_LOG)) {
