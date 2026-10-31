@@ -113,7 +113,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🔑 Administrative Access
 
 - **Admin Login URL**: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
-- **Default Password**: `swanworks_admin_2026`
+- **Password**: Configured securely via `ADMIN_PASSWORD` in `.env.local` / Vercel Environment Variables
 - **Capabilities**:
   - View real-time revenue, order counts, product counts, and download counts
   - Add new digital products (title, slug, category, price, features, files, vault attachment)

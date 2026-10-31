@@ -1082,13 +1082,12 @@ export function getTokensForOrder(orderId: string): DownloadToken[] {
 // ---------------- Admin Credentials ----------------
 
 export function verifyAdminPassword(inputPassword: string): boolean {
-  // 1. Master password (environment variable or default master password)
-  const masterPassword = process.env.ADMIN_PASSWORD || "swanworks_admin_2026";
-  if (inputPassword === masterPassword) {
+  // 1. Private environment variable (ADMIN_PASSWORD in Vercel or .env.local)
+  if (process.env.ADMIN_PASSWORD && inputPassword === process.env.ADMIN_PASSWORD) {
     return true;
   }
 
-  // 2. Custom password updated via Admin Dashboard
+  // 2. Custom password updated via Admin Dashboard (salted scrypt hash)
   const db = getDatabase();
   if (!db.adminPasswordHash || !db.adminPasswordSalt) {
     return false;
