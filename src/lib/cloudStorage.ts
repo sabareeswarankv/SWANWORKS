@@ -1,5 +1,7 @@
+import { UTApi } from "uploadthing/server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 interface UploadResult {
   success: boolean;
@@ -10,6 +12,31 @@ interface UploadResult {
 }
 
 /**
+ * Resolves a valid UploadThing token from environment variables.
+ */
+function getUploadThingToken(): string | null {
+  if (process.env.UPLOADTHING_TOKEN) {
+    return process.env.UPLOADTHING_TOKEN;
+  }
+
+  // Synthesize token from secret & appId if individual keys are provided
+  const apiKey = process.env.UPLOADTHING_SECRET;
+  const appId = process.env.UPLOADTHING_APP_ID;
+
+  if (apiKey && appId) {
+    try {
+      return Buffer.from(
+        JSON.stringify({ apiKey, appId, regions: ["sea1"] })
+      ).toString("base64");
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Uploads a file (PDF, image, ZIP, etc.) to UploadThing cloud storage,
  * with an automatic fallback to local disk storage if offline or unconfigured.
  */
@@ -17,109 +44,104 @@ export async function saveFile(
   file: File,
   type: "thumbnail" | "vault_file"
 ): Promise<UploadResult> {
-  const token = process.env.UPLOADTHING_TOKEN;
-  const apiKey = process.env.UPLOADTHING_SECRET || "";
-
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const token = getUploadThingToken();
   const safeBaseName = path
     .basename(file.name)
     .replace(/[^a-zA-Z0-9._-]/g, "_");
   const uniquePrefix = Date.now();
   const finalFilename = `${uniquePrefix}_${safeBaseName}`;
 
-  // 1. Try UploadThing Cloud Storage if credentials exist
-  if (apiKey) {
+  // 1. Try UploadThing Cloud Storage (Permanent, CDN-backed, Vercel-compatible)
+  if (token) {
     try {
-      // Step A: Request presigned upload URL from UploadThing API (with 6s timeout)
-      const requestRes = await fetch("https://api.uploadthing.com/v6/uploadFiles", {
-        method: "POST",
-        signal: AbortSignal.timeout(6000),
-        headers: {
-          "Content-Type": "application/json",
-          "x-uploadthing-api-key": apiKey,
-          "x-uploadthing-be-adapter": "custom",
-        },
-        body: JSON.stringify({
-          files: [
-            {
-              name: safeBaseName,
-              size: file.size,
-              type: file.type || "application/octet-stream",
-            },
-          ],
-          acl: "public-read",
-        }),
-      });
+      const utapi = new UTApi({ token });
+      const uploadResponses = await utapi.uploadFiles([file]);
+      const uploadRes = Array.isArray(uploadResponses)
+        ? uploadResponses[0]
+        : uploadResponses;
 
-      if (requestRes.ok) {
-        const json = await requestRes.json();
-        const uploadData = json.data?.[0];
+      if (uploadRes?.data) {
+        const cloudUrl =
+          uploadRes.data.ufsUrl ||
+          uploadRes.data.url ||
+          `https://utfs.io/f/${uploadRes.data.key}`;
 
-        if (uploadData?.presignedUrl) {
-          // Step B: Post the file to the presigned S3 storage URL
-          const uploadFormData = new FormData();
-          if (uploadData.fields) {
-            Object.entries(uploadData.fields).forEach(([k, v]) => {
-              uploadFormData.append(k, String(v));
-            });
-          }
-          uploadFormData.append("file", file);
-
-          const s3Res = await fetch(uploadData.presignedUrl, {
-            method: "POST",
-            signal: AbortSignal.timeout(10000),
-            body: uploadFormData,
-          });
-
-          // Some endpoints use PUT or return 200/204
-          if (s3Res.ok || s3Res.status === 204) {
-            const cloudUrl =
-              uploadData.fileUrl ||
-              uploadData.url ||
-              `https://utfs.io/f/${uploadData.key}`;
-
-            return {
-              success: true,
-              url: cloudUrl,
-              filename: cloudUrl,
-              isCloud: true,
-            };
-          }
-        }
+        return {
+          success: true,
+          url: cloudUrl,
+          filename: cloudUrl,
+          isCloud: true,
+        };
+      } else if (uploadRes?.error) {
+        console.warn("UploadThing API returned error:", uploadRes.error);
       }
     } catch (cloudErr) {
-      console.warn("UploadThing cloud upload failed, using local vault:", cloudErr);
+      console.warn("UploadThing cloud upload failed, falling back:", cloudErr);
     }
   }
 
-  // 2. Reliable Local Vault Fallback
-  if (type === "thumbnail") {
-    const coversDir = path.join(process.cwd(), "public", "uploads", "covers");
-    if (!fs.existsSync(coversDir)) {
-      fs.mkdirSync(coversDir, { recursive: true });
-    }
-    const filePath = path.join(coversDir, finalFilename);
-    fs.writeFileSync(filePath, buffer);
+  // 2. Local Vault / Disk Fallback (Handles local dev and Vercel serverless /tmp)
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    return {
-      success: true,
-      url: `/uploads/covers/${finalFilename}`,
-      filename: finalFilename,
-      isCloud: false,
-    };
-  } else {
-    const vaultDir = path.join(process.cwd(), "storage", "digital_vault");
-    if (!fs.existsSync(vaultDir)) {
-      fs.mkdirSync(vaultDir, { recursive: true });
-    }
-    const filePath = path.join(vaultDir, finalFilename);
-    fs.writeFileSync(filePath, buffer);
+    if (type === "thumbnail") {
+      let targetDir = path.join(process.cwd(), "public", "uploads", "covers");
+      let urlPath = `/uploads/covers/${finalFilename}`;
 
+      // If running in a read-only serverless environment (Vercel), write to /tmp
+      try {
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+      } catch {
+        targetDir = path.join(os.tmpdir(), "swanworks_uploads");
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        urlPath = `data:${file.type || "image/png"};base64,${buffer.toString("base64")}`;
+      }
+
+      const filePath = path.join(targetDir, finalFilename);
+      fs.writeFileSync(filePath, buffer);
+
+      return {
+        success: true,
+        url: urlPath,
+        filename: finalFilename,
+        isCloud: false,
+      };
+    } else {
+      let targetDir = path.join(process.cwd(), "storage", "digital_vault");
+      try {
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+      } catch {
+        targetDir = path.join(os.tmpdir(), "swanworks_vault");
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+      }
+
+      const filePath = path.join(targetDir, finalFilename);
+      fs.writeFileSync(filePath, buffer);
+
+      return {
+        success: true,
+        url: `/api/download/local_${finalFilename}`,
+        filename: finalFilename,
+        isCloud: false,
+      };
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Disk write failed";
+    console.error("Local storage fallback also failed:", msg);
     return {
-      success: true,
-      url: `/api/download/local_${finalFilename}`,
-      filename: finalFilename,
+      success: false,
+      url: "",
+      filename: "",
       isCloud: false,
+      error: `Storage error: ${msg}`,
     };
   }
 }
