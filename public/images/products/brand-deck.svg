@@ -1,0 +1,21 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" rx="16" fill="#F0EEFA"/>
+  <g transform="translate(60, 45)">
+    <!-- Stack of presentation slides -->
+    <!-- Slide 3 back -->
+    <rect x="25" y="0" width="230" height="150" rx="8" fill="#ECE9FF" stroke="#D4CDFF"/>
+    <!-- Slide 2 middle -->
+    <rect x="12" y="15" width="245" height="155" rx="8" fill="#F9F8FF" stroke="#E9E5FF"/>
+    <!-- Slide 1 front -->
+    <rect x="0" y="30" width="260" height="165" rx="8" fill="#FFFFFF" stroke="#E4E0F4" stroke-width="1.5"/>
+    <rect x="25" y="55" width="90" height="12" rx="6" fill="#7060F5"/>
+    <rect x="25" y="75" width="160" height="6" rx="3" fill="#22212B"/>
+    <rect x="25" y="87" width="120" height="6" rx="3" fill="#777486"/>
+    
+    <!-- Graphic layout preview on front slide -->
+    <rect x="25" y="110" width="90" height="60" rx="6" fill="#F3F0FF"/>
+    <circle cx="70" cy="140" r="16" fill="#B8A7FF"/>
+    <rect x="130" y="110" width="105" height="25" rx="4" fill="#F9F8FF" stroke="#E9E5FF"/>
+    <rect x="130" y="145" width="105" height="25" rx="4" fill="#F9F8FF" stroke="#E9E5FF"/>
+  </g>
+</svg>

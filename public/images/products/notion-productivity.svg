@@ -1,0 +1,57 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" rx="16" fill="#F0EEFA"/>
+  <g transform="translate(65, 30)">
+    <!-- Shadow -->
+    <rect x="6" y="8" width="260" height="230" rx="6" fill="#7060F5" fill-opacity="0.08"/>
+    <!-- Notebook pages spread -->
+    <rect x="0" y="0" width="270" height="240" rx="6" fill="#FFFFFF" stroke="#E4E0F4" stroke-width="1.5"/>
+    <line x1="135" y1="0" x2="135" y2="240" stroke="#E9E5FF" stroke-dasharray="4 4"/>
+    
+    <!-- Left page: PARA System -->
+    <rect x="20" y="24" width="70" height="10" rx="4" fill="#22212B"/>
+    <rect x="20" y="44" width="95" height="4" rx="2" fill="#777486"/>
+    
+    <rect x="20" y="62" width="95" height="34" rx="4" fill="#F9F8FF" stroke="#E9E5FF"/>
+    <rect x="28" y="72" width="40" height="6" rx="3" fill="#7060F5"/>
+    <rect x="28" y="82" width="60" height="4" rx="2" fill="#777486"/>
+
+    <rect x="20" y="106" width="95" height="34" rx="4" fill="#F9F8FF" stroke="#E9E5FF"/>
+    <rect x="28" y="116" width="50" height="6" rx="3" fill="#22212B"/>
+    <rect x="28" y="126" width="70" height="4" rx="2" fill="#777486"/>
+
+    <rect x="20" y="150" width="95" height="65" rx="4" fill="#ECE9FF"/>
+    <rect x="28" y="162" width="45" height="6" rx="3" fill="#7060F5"/>
+    <rect x="28" y="174" width="75" height="4" rx="2" fill="#5A48E6"/>
+    <rect x="28" y="184" width="65" height="4" rx="2" fill="#5A48E6"/>
+
+    <!-- Right page: Weekly Tracker -->
+    <rect x="155" y="24" width="80" height="10" rx="4" fill="#7060F5"/>
+    <rect x="155" y="44" width="90" height="4" rx="2" fill="#777486"/>
+
+    <!-- Habit checkboxes -->
+    <g transform="translate(155, 62)">
+      <circle cx="8" cy="8" r="6" fill="#7060F5"/>
+      <rect x="22" y="5" width="65" height="6" rx="3" fill="#22212B"/>
+      
+      <circle cx="8" cy="28" r="6" fill="#7060F5"/>
+      <rect x="22" y="25" width="75" height="6" rx="3" fill="#22212B"/>
+
+      <circle cx="8" cy="48" r="6" fill="#7060F5"/>
+      <rect x="22" y="45" width="50" height="6" rx="3" fill="#22212B"/>
+
+      <circle cx="8" cy="68" r="6" fill="#E9E5FF" stroke="#7060F5" stroke-width="1.5"/>
+      <rect x="22" y="65" width="70" height="6" rx="3" fill="#777486"/>
+
+      <circle cx="8" cy="88" r="6" fill="#E9E5FF" stroke="#7060F5" stroke-width="1.5"/>
+      <rect x="22" y="85" width="60" height="6" rx="3" fill="#777486"/>
+    </g>
+
+    <!-- Mini chart -->
+    <rect x="155" y="175" width="95" height="40" rx="4" fill="#F9F8FF" stroke="#E9E5FF"/>
+    <rect x="165" y="195" width="8" height="14" rx="2" fill="#B8A7FF"/>
+    <rect x="180" y="188" width="8" height="21" rx="2" fill="#7060F5"/>
+    <rect x="195" y="192" width="8" height="17" rx="2" fill="#7060F5"/>
+    <rect x="210" y="182" width="8" height="27" rx="2" fill="#7060F5"/>
+    <rect x="225" y="185" width="8" height="24" rx="2" fill="#B8A7FF"/>
+  </g>
+</svg>

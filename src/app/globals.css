@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F9F8FF;
+  --foreground: #22212B;
+  --swan-cloud: #F9F8FF;
+  --swan-lavender-pale: #E9E5FF;
+  --swan-lavender-subtle: #F3F0FF;
+  --swan-lilac: #B8A7FF;
+  --swan-periwinkle: #7060F5;
+  --swan-periwinkle-hover: #5A48E6;
+  --swan-periwinkle-light: #ECE9FF;
+  --swan-ink: #22212B;
+  --swan-ink-muted: #777486;
+  --swan-border: #E4E0F4;
+  --swan-card-bg: #FFFFFF;
+}
+
+body {
+  background-color: var(--swan-cloud);
+  color: var(--swan-ink);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F3F0FF;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4CDFF;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B8A7FF;
+}
+
+/* Glassmorphism and 3D preview card styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(233, 229, 255, 0.8);
+}
+
+.hero-box-glow {
+  box-shadow: 0 25px 60px -15px rgba(112, 96, 245, 0.25), 0 0 40px 0 rgba(184, 167, 255, 0.3);
+}
+
+.product-card-shadow {
+  box-shadow: 0 8px 30px -8px rgba(34, 33, 43, 0.06), 0 2px 10px -2px rgba(112, 96, 245, 0.04);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.product-card-shadow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -10px rgba(112, 96, 245, 0.16), 0 4px 14px -2px rgba(34, 33, 43, 0.06);
+}

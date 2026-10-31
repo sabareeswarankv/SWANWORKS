@@ -1,0 +1,33 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" rx="16" fill="#F0EEFA"/>
+  <!-- Portfolio Browser Mockup -->
+  <g transform="translate(50, 35)">
+    <!-- Shadow -->
+    <rect x="5" y="8" width="290" height="215" rx="10" fill="#7060F5" fill-opacity="0.1"/>
+    <!-- Window frame -->
+    <rect x="0" y="0" width="300" height="225" rx="10" fill="#22212B"/>
+    <!-- Window controls -->
+    <circle cx="20" cy="18" r="4" fill="#FF5F56"/>
+    <circle cx="32" cy="18" r="4" fill="#FFBD2E"/>
+    <circle cx="44" cy="18" r="4" fill="#27C93F"/>
+    
+    <!-- Hero inside portfolio -->
+    <rect x="25" y="45" width="160" height="18" rx="4" fill="#FFFFFF"/>
+    <rect x="25" y="70" width="210" height="8" rx="4" fill="#777486"/>
+    <rect x="25" y="84" width="140" height="8" rx="4" fill="#777486"/>
+
+    <!-- CTA button -->
+    <rect x="25" y="105" width="70" height="20" rx="10" fill="#7060F5"/>
+    <rect x="105" y="105" width="60" height="20" rx="10" fill="#353443"/>
+
+    <!-- Project Bento Grid inside screen -->
+    <rect x="25" y="140" width="115" height="65" rx="6" fill="#181720" stroke="#353443"/>
+    <rect x="35" y="152" width="50" height="8" rx="4" fill="#B8A7FF"/>
+    <rect x="35" y="166" width="70" height="5" rx="2.5" fill="#777486"/>
+
+    <rect x="150" y="140" width="125" height="65" rx="6" fill="#181720" stroke="#353443"/>
+    <circle cx="170" cy="162" r="12" fill="#7060F5" fill-opacity="0.3"/>
+    <rect x="190" y="152" width="60" height="8" rx="4" fill="#FFFFFF"/>
+    <rect x="190" y="166" width="75" height="5" rx="2.5" fill="#777486"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "orders": [],
+  "bundles": [],
+  "coupons": [],
+  "version": 1,
+  "products": [],
+  "categories": [],
+  "entitlements": [],
+  "downloadTokens": [],
+  "adminPasswordHash": "bcdbcf919d6091ba975b74e2597da320e97f6df6c44cb5d4ccbb3d2971f42fad95921c824de52801b708f1a414fa374b3ddfcbfc39a5f5698f33482860dc9420",
+  "adminPasswordSalt": "774a2a963cd8539473e4eb0647b8e020"
+}
