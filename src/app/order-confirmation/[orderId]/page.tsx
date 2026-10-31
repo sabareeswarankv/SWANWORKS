@@ -1,7 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getOrderByIdAsync, getTokensForOrder, getAllProducts } from "@/lib/db";
+import {
+  getOrderByIdAsync,
+  getTokensForOrderAsync,
+  getAllProductsAsync,
+  markOrderAsPaidAsync,
+} from "@/lib/db";
 import {
   CheckCircle2,
   Download,
@@ -31,8 +36,21 @@ export default async function OrderConfirmationPage({
     notFound();
   }
 
-  const tokens = getTokensForOrder(order.id);
-  const allProducts = getAllProducts();
+  let tokens = await getTokensForOrderAsync(order.id);
+  const allProducts = await getAllProductsAsync(true);
+
+  // Self-healing: if order is marked paid but tokens are not populated, generate them immediately
+  if (order.status === "paid" && tokens.length === 0) {
+    const recovery = await markOrderAsPaidAsync(order.id, {
+      paymentId: order.paymentId || "approved",
+      utr: order.utr,
+      provider: "upi_direct",
+    });
+    if (recovery && Array.isArray(recovery.tokens) && recovery.tokens.length > 0) {
+      tokens = recovery.tokens;
+    }
+  }
+
   const isPendingApproval = order.status === "pending_approval";
 
   return (

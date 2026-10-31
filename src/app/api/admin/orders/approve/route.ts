@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { isAuthenticatedAdmin } from "@/lib/adminAuth";
-import { getOrderByIdAsync, markOrderAsPaid, saveDatabaseAsync, getAllProducts } from "@/lib/db";
+import { getOrderByIdAsync, markOrderAsPaidAsync, getAllProductsAsync } from "@/lib/db";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { getBaseUrl } from "@/lib/url";
 
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Mark as paid and generate secure tokens
-    const result = markOrderAsPaid(order.id, {
+    // Mark as paid and generate secure tokens directly in cloud DB
+    const result = await markOrderAsPaidAsync(order.id, {
       paymentId: order.paymentId || `upi_approved_${Date.now()}`,
       paymentOrderId: order.paymentOrderId,
       provider: "upi_direct",
@@ -37,10 +37,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await saveDatabaseAsync();
-
     // Send confirmation email with download links to customer
-    const allProducts = getAllProducts();
+    const allProducts = await getAllProductsAsync(true);
     const baseUrl = getBaseUrl(req);
 
     try {

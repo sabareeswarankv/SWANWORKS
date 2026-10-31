@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getAllProducts } from "@/lib/db";
+import { getProductBySlugAsync, getAllProductsAsync } from "@/lib/db";
 import ProductDetailActions from "@/components/ProductDetailActions";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
@@ -25,7 +25,7 @@ interface ProductPageProps {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlugAsync(slug);
   if (!product) {
     return { title: "Product Not Found | SWANWORKS" };
   }
@@ -37,14 +37,14 @@ export async function generateMetadata({ params }: ProductPageProps) {
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlugAsync(slug);
 
   if (!product) {
     notFound();
   }
 
   // Related products in the same category
-  const allProducts = getAllProducts();
+  const allProducts = await getAllProductsAsync();
   const relatedProducts = allProducts
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 3);

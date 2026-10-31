@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { isAuthenticatedAdmin } from "@/lib/adminAuth";
-import { updateProductAsync, deleteProductAsync, getProductById } from "@/lib/db";
+import { updateProductAsync, deleteProductAsync, getProductByIdAsync } from "@/lib/db";
 
 interface RouteProps {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: RouteProps) {
   const { id } = await params;
   try {
     const updates = await req.json();
-    const existing = getProductById(id);
+    const existing = await getProductByIdAsync(id);
     if (!existing) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest, { params }: RouteProps) {
   }
 
   const { id } = await params;
-  const existing = getProductById(id);
+  const existing = await getProductByIdAsync(id);
   const deleted = await deleteProductAsync(id);
   if (!deleted) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });

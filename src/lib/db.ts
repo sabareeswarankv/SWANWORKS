@@ -492,9 +492,37 @@ export function getProductBySlug(slug: string): Product | null {
   return db.products.find((p) => p.slug === slug && p.published) || null;
 }
 
+export async function getProductBySlugAsync(slug: string): Promise<Product | null> {
+  if (hasDbUrl()) {
+    try {
+      const cloud = await getCloudDatabaseAsync<DatabaseSchema>();
+      if (cloud && Array.isArray(cloud.products)) {
+        cachedDb = cloud;
+        lastCacheTime = Date.now();
+        return cloud.products.find((p) => p.slug === slug && p.published) || null;
+      }
+    } catch {}
+  }
+  return getProductBySlug(slug);
+}
+
 export function getProductById(id: string): Product | null {
   const db = getDatabase();
   return db.products.find((p) => p.id === id) || null;
+}
+
+export async function getProductByIdAsync(id: string): Promise<Product | null> {
+  if (hasDbUrl()) {
+    try {
+      const cloud = await getCloudDatabaseAsync<DatabaseSchema>();
+      if (cloud && Array.isArray(cloud.products)) {
+        cachedDb = cloud;
+        lastCacheTime = Date.now();
+        return cloud.products.find((p) => p.id === id) || null;
+      }
+    } catch {}
+  }
+  return getProductById(id);
 }
 
 export function createProduct(
@@ -924,6 +952,26 @@ export function markOrderAsPaid(
   };
 }
 
+export async function markOrderAsPaidAsync(
+  orderId: string,
+  paymentDetails: Parameters<typeof markOrderAsPaid>[1]
+): Promise<{ order: Order; entitlement: DownloadEntitlement; tokens: DownloadToken[] } | null> {
+  if (hasDbUrl()) {
+    try {
+      const cloud = await getCloudDatabaseAsync<DatabaseSchema>();
+      if (cloud && Array.isArray(cloud.orders)) {
+        cachedDb = cloud;
+        lastCacheTime = Date.now();
+      }
+    } catch {}
+  }
+  const result = markOrderAsPaid(orderId, paymentDetails);
+  if (result) {
+    await saveDatabaseAsync();
+  }
+  return result;
+}
+
 export function markOrderPendingApproval(
   orderId: string,
   utr?: string
@@ -1077,6 +1125,20 @@ export async function verifyAndConsumeDownloadTokenAsync(
 export function getTokensForOrder(orderId: string): DownloadToken[] {
   const db = getDatabase();
   return db.downloadTokens.filter((t) => t.orderId === orderId);
+}
+
+export async function getTokensForOrderAsync(orderId: string): Promise<DownloadToken[]> {
+  if (hasDbUrl()) {
+    try {
+      const cloud = await getCloudDatabaseAsync<DatabaseSchema>();
+      if (cloud && Array.isArray(cloud.downloadTokens)) {
+        cachedDb = cloud;
+        lastCacheTime = Date.now();
+        return cloud.downloadTokens.filter((t) => t.orderId === orderId);
+      }
+    } catch {}
+  }
+  return getTokensForOrder(orderId);
 }
 
 // ---------------- Admin Credentials ----------------
