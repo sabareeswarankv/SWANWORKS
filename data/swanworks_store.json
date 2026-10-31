@@ -1,12 +1,24 @@
 {
   "orders": [],
   "bundles": [],
-  "coupons": [],
+  "coupons": [
+    {
+      "id": "coup_launch50",
+      "code": "LAUNCH50",
+      "type": "percentage",
+      "active": true,
+      "discount": 50,
+      "minOrder": 199,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "description": "Launch special: 50% discount on all orders above ₹199"
+    }
+  ],
   "version": 1,
+  "messages": [],
   "products": [],
   "categories": [],
   "entitlements": [],
   "downloadTokens": [],
-  "adminPasswordHash": "bcdbcf919d6091ba975b74e2597da320e97f6df6c44cb5d4ccbb3d2971f42fad95921c824de52801b708f1a414fa374b3ddfcbfc39a5f5698f33482860dc9420",
-  "adminPasswordSalt": "774a2a963cd8539473e4eb0647b8e020"
+  "adminPasswordHash": "863c95fe03b71df623050198b3b9433e55027b6a35567bf3dc64feca52f50f7bf1ad059bce0036b66ba6761698b389f04ad6d7002426c7be1b45ea73b681ab07",
+  "adminPasswordSalt": "5c0b4c0f22951a9e83cc3120ef913250"
 }
