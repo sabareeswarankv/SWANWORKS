@@ -64,13 +64,30 @@ export async function GET(
       product.vaultFile.startsWith("http://") ||
       product.vaultFile.startsWith("https://");
 
-    // Clean file name for download attachment header
-    const cleanFileName = product.vaultFile
-      .split("/")
-      .pop()!
-      .replace(/^\d+_/, "") || `${product.slug}.pdf`;
+    // 1. Determine clean, user-friendly file name with proper extension (e.g. "The_Freelance_Client_Acquisition_Toolkit.pdf")
+    let rawFileName = "";
+    if (product.includedFiles && product.includedFiles.length > 0 && product.includedFiles[0]) {
+      rawFileName = product.includedFiles[0].trim();
+    }
 
-    const ext = path.extname(cleanFileName).toLowerCase();
+    // If includedFiles is generic or missing, construct cleanly from product title
+    if (!rawFileName || rawFileName.toLowerCase().includes("download file") || !path.extname(rawFileName)) {
+      const sanitized = product.title
+        .replace(/[^a-zA-Z0-9\s_-]/g, "")
+        .trim()
+        .replace(/\s+/g, "_");
+      rawFileName = `${sanitized || product.slug || "SWANWORKS_Resource"}.pdf`;
+    }
+
+    // Always ensure a valid extension exists (defaults to .pdf)
+    let ext = path.extname(rawFileName).toLowerCase();
+    if (!ext) {
+      ext = ".pdf";
+      rawFileName += ".pdf";
+    }
+
+    const cleanFileName = path.basename(rawFileName);
+
     const mimeMap: Record<string, string> = {
       ".pdf": "application/pdf",
       ".zip": "application/zip",
@@ -81,7 +98,7 @@ export async function GET(
       ".svg": "image/svg+xml",
       ".txt": "text/plain; charset=utf-8",
     };
-    const contentType = mimeMap[ext] || "application/octet-stream";
+    const contentType = mimeMap[ext] || "application/pdf";
 
     // A. Handle UploadThing Cloud File
     if (isCloudFile) {
@@ -92,7 +109,7 @@ export async function GET(
           return new NextResponse(cloudBuffer, {
             status: 200,
             headers: {
-              "Content-Disposition": `attachment; filename="${cleanFileName}"`,
+              "Content-Disposition": `attachment; filename="${cleanFileName}"; filename*=UTF-8''${encodeURIComponent(cleanFileName)}`,
               "Content-Type": contentType,
               "Content-Length": cloudBuffer.length.toString(),
               "Cache-Control": "private, no-cache, no-store, must-revalidate",
@@ -126,7 +143,7 @@ export async function GET(
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
-        "Content-Disposition": `attachment; filename="${cleanFileName}"`,
+        "Content-Disposition": `attachment; filename="${cleanFileName}"; filename*=UTF-8''${encodeURIComponent(cleanFileName)}`,
         "Content-Type": contentType,
         "Content-Length": fileBuffer.length.toString(),
         "Cache-Control": "private, no-cache, no-store, must-revalidate",

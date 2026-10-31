@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         `;
 
         await transporter.sendMail({
-          from: `"SWANWORKS Help Desk" <${senderEmail}>`,
+          from: `"SWANWORKS Help Desk" <helloswanworks@gmail.com>`,
           to: adminEmail,
           replyTo: email,
           subject,

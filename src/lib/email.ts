@@ -134,11 +134,10 @@ ${downloadLinks.map((l) => `• ${l.productTitle}: ${l.url}`).join("\n")}
 If you have questions, reply to this email or contact us at helloswanworks@gmail.com.
       `.trim();
 
-      const senderEmail = process.env.SMTP_USER || "sabareekv7@gmail.com";
       await transporter.sendMail({
-        from: `"SWANWORKS Store" <${senderEmail}>`,
+        from: '"SWANWORKS" <helloswanworks@gmail.com>',
         to: order.customerEmail,
-        replyTo: senderEmail,
+        replyTo: "helloswanworks@gmail.com",
         subject,
         text: plainTextContent,
         html,
@@ -238,11 +237,10 @@ export async function sendAdminNewPaymentAlert(
   const transporter = getMailTransporter();
   if (transporter) {
     try {
-      const senderEmail = process.env.SMTP_USER || "sabareekv7@gmail.com";
       await transporter.sendMail({
-        from: `"SWANWORKS Store" <${senderEmail}>`,
+        from: '"SWANWORKS Alert" <helloswanworks@gmail.com>',
         to: adminEmail,
-        replyTo: senderEmail,
+        replyTo: "helloswanworks@gmail.com",
         subject,
         html,
         headers: {
